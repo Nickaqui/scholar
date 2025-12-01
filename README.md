@@ -74,14 +74,17 @@ npm start
 - ✅ Gerenciar alunos, professores e disciplinas
 - ✅ Criar e gerenciar matrículas
 - ✅ Visualizar relatórios completos
+- ✅ Publicar/Visualizar avisos
 
 ### Professor
 - ✅ Visualizar disciplinas lecionadas
 - ✅ Lançar notas dos alunos
 - ✅ Editar e excluir notas
+- ✅ Publicar/Visualizar avisos
 
 ### Aluno
 - ✅ Visualizar boletim com notas
 - ✅ Ver disciplinas matriculadas
 - ✅ Acompanhar média por disciplina
+- ✅ Visualizar avisos
 
