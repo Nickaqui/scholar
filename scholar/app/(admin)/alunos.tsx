@@ -11,12 +11,19 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../contexts/AuthContext';
 import * as adminService from '../../services/adminService';
 
 export default function AlunosScreen() {
-  const { token } = useAuth();
+  const { usuario } = useAuth();
+  
+  const getToken = async () => {
+    return await AsyncStorage.getItem('token') || '';
+  };
   const [alunos, setAlunos] = useState([]);
+  const [disciplinas, setDisciplinas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modoEdicao, setModoEdicao] = useState(false);
@@ -32,16 +39,29 @@ export default function AlunosScreen() {
     curso: '',
     data_nascimento: '',
     endereco: '',
+    disciplinas_selecionadas: [] as number[], // IDs das disciplinas selecionadas
   });
 
   useEffect(() => {
     carregarAlunos();
+    carregarDisciplinas();
   }, []);
+
+  const carregarDisciplinas = async () => {
+    try {
+      const token = await getToken();
+      const response = await adminService.listarDisciplinas(token, { ativa: true });
+      setDisciplinas(response.dados || []);
+    } catch (error) {
+      console.error('Erro ao carregar disciplinas:', error);
+    }
+  };
 
   const carregarAlunos = async () => {
     try {
       setLoading(true);
-      const response = await adminService.listarAlunos(token!, { busca });
+      const token = await getToken();
+      const response = await adminService.listarAlunos(token, { busca });
       setAlunos(response.dados);
     } catch (error) {
       console.error('Erro ao carregar alunos:', error);
@@ -62,6 +82,7 @@ export default function AlunosScreen() {
       curso: 'Desenvolvimento de Software Multiplataforma',
       data_nascimento: '',
       endereco: '',
+      disciplinas_selecionadas: [],
     });
     setModalVisible(true);
   };
@@ -94,17 +115,52 @@ export default function AlunosScreen() {
       }
 
       setLoading(true);
+      const token = await getToken();
 
       if (modoEdicao) {
         const dadosAtualizacao = { ...form };
         if (!dadosAtualizacao.senha) {
           delete dadosAtualizacao.senha;
         }
-        await adminService.atualizarAluno(token!, alunoSelecionado.id, dadosAtualizacao);
+        delete dadosAtualizacao.disciplinas_selecionadas; // Não atualizar disciplinas na edição
+        await adminService.atualizarAluno(token, alunoSelecionado.id, dadosAtualizacao);
         Alert.alert('Sucesso', 'Aluno atualizado com sucesso');
       } else {
-        await adminService.criarAluno(token!, form);
-        Alert.alert('Sucesso', 'Aluno criado com sucesso');
+        // Criar aluno
+        const { disciplinas_selecionadas, ...dadosAluno } = form;
+        const response = await adminService.criarAluno(token, dadosAluno);
+        
+        // Criar matrículas para as disciplinas selecionadas
+        if (disciplinas_selecionadas.length > 0 && response.dados?.id) {
+          const anoAtual = new Date().getFullYear();
+          const semestreAtual = new Date().getMonth() < 6 ? 1 : 2;
+          
+          let matriculasCriadas = 0;
+          for (const disciplinaId of disciplinas_selecionadas) {
+            try {
+              await adminService.criarMatricula(token, {
+                aluno_id: response.dados.id,
+                disciplina_id: disciplinaId,
+                semestre: semestreAtual,
+                ano: anoAtual,
+              });
+              matriculasCriadas++;
+            } catch (error) {
+              console.error(`Erro ao matricular em disciplina ${disciplinaId}:`, error);
+            }
+          }
+          
+          if (matriculasCriadas > 0) {
+            Alert.alert(
+              'Sucesso', 
+              `Aluno criado e matriculado em ${matriculasCriadas} disciplina(s) com sucesso!`
+            );
+          } else {
+            Alert.alert('Sucesso', 'Aluno criado com sucesso');
+          }
+        } else {
+          Alert.alert('Sucesso', 'Aluno criado com sucesso');
+        }
       }
 
       setModalVisible(false);
@@ -114,6 +170,21 @@ export default function AlunosScreen() {
       Alert.alert('Erro', error.response?.data?.mensagem || 'Não foi possível salvar o aluno');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleDisciplina = (disciplinaId: number) => {
+    const disciplinas = form.disciplinas_selecionadas || [];
+    if (disciplinas.includes(disciplinaId)) {
+      setForm({
+        ...form,
+        disciplinas_selecionadas: disciplinas.filter(id => id !== disciplinaId),
+      });
+    } else {
+      setForm({
+        ...form,
+        disciplinas_selecionadas: [...disciplinas, disciplinaId],
+      });
     }
   };
 
@@ -129,7 +200,8 @@ export default function AlunosScreen() {
           onPress: async () => {
             try {
               setLoading(true);
-              await adminService.desativarAluno(token!, id);
+              const token = await getToken();
+              await adminService.desativarAluno(token, id);
               Alert.alert('Sucesso', 'Aluno desativado com sucesso');
               carregarAlunos();
             } catch (error) {
@@ -262,6 +334,45 @@ export default function AlunosScreen() {
                 onChangeText={(text) => setForm({ ...form, curso: text })}
                 placeholder="Nome do curso"
               />
+
+              {!modoEdicao && (
+                <>
+                  <Text style={styles.label}>Disciplinas (opcional)</Text>
+                  <Text style={styles.helperText}>
+                    Selecione as disciplinas para matricular o aluno automaticamente
+                  </Text>
+                  <ScrollView style={styles.disciplinasContainer} nestedScrollEnabled>
+                    {disciplinas.map((disc: any) => {
+                      const selecionada = form.disciplinas_selecionadas?.includes(disc.id);
+                      return (
+                        <TouchableOpacity
+                          key={disc.id}
+                          style={[
+                            styles.disciplinaItem,
+                            selecionada && styles.disciplinaItemSelecionada,
+                          ]}
+                          onPress={() => toggleDisciplina(disc.id)}
+                        >
+                          <Text
+                            style={[
+                              styles.disciplinaText,
+                              selecionada && styles.disciplinaTextSelecionada,
+                            ]}
+                          >
+                            {disc.codigo} - {disc.nome}
+                          </Text>
+                          {selecionada && (
+                            <Text style={styles.checkmark}>✓</Text>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                    {disciplinas.length === 0 && (
+                      <Text style={styles.emptyText}>Nenhuma disciplina cadastrada</Text>
+                    )}
+                  </ScrollView>
+                </>
+              )}
 
               <Text style={styles.label}>Data de Nascimento</Text>
               <TextInput
@@ -494,6 +605,45 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  disciplinasContainer: {
+    maxHeight: 200,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+    marginTop: 5,
+  },
+  disciplinaItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  disciplinaItemSelecionada: {
+    backgroundColor: '#e3f2fd',
+  },
+  disciplinaText: {
+    fontSize: 14,
+    color: '#333',
+    flex: 1,
+  },
+  disciplinaTextSelecionada: {
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  checkmark: {
+    fontSize: 18,
+    color: '#34C759',
+    fontWeight: 'bold',
   },
 });
 

@@ -83,6 +83,24 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.avisosCard}
+            onPress={() => router.push('/(tabs)/avisos')}
+          >
+            <View style={styles.avisosCardIcon}>
+              <Ionicons name="notifications" size={24} color="#2563eb" />
+            </View>
+            <View style={styles.avisosCardContent}>
+              <Text style={styles.avisosCardTitle}>Avisos Acadêmicos</Text>
+              <Text style={styles.avisosCardSubtitle}>
+                Veja os últimos comunicados e avisos
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Meu Boletim</Text>
           
           {boletim.length === 0 ? (
@@ -152,6 +170,24 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.adminCard}
+            onPress={() => router.push('/(tabs)/avisos')}
+          >
+            <View style={styles.adminCardIcon}>
+              <Ionicons name="notifications" size={32} color="#8b5cf6" />
+            </View>
+            <View style={styles.adminCardContent}>
+              <Text style={styles.adminCardTitle}>Avisos Acadêmicos</Text>
+              <Text style={styles.adminCardSubtitle}>
+                Ver e criar avisos para os alunos
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Gerenciamento de Notas</Text>
           
           <TouchableOpacity 
@@ -200,6 +236,24 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <Text style={styles.greeting}>Painel Administrativo</Text>
           <Text style={styles.subgreeting}>Bem-vindo, {usuario?.email}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.adminCard}
+            onPress={() => router.push('/(tabs)/avisos')}
+          >
+            <View style={styles.adminCardIcon}>
+              <Ionicons name="notifications" size={32} color="#8b5cf6" />
+            </View>
+            <View style={styles.adminCardContent}>
+              <Text style={styles.adminCardTitle}>Avisos Acadêmicos</Text>
+              <Text style={styles.adminCardSubtitle}>
+                Gerenciar avisos e comunicados
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
@@ -491,6 +545,41 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   adminCardSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  avisosCard: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    alignItems: 'center',
+  },
+  avisosCardIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  avisosCardContent: {
+    flex: 1,
+  },
+  avisosCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  avisosCardSubtitle: {
     fontSize: 14,
     color: '#666',
   },

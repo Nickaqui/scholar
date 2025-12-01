@@ -64,7 +64,9 @@ npm start
 |------|-------|-------|
 | **Admin** | admin@scholar.com | admin123 |
 | **Professor** | maria.santos@scholar.com | prof123 |
-| **Aluno** | joao.silva@scholar.com | aluno123 |
+| **Professor** | joao.silva@scholar.com | prof123 |
+| **Aluno** | pedro.costa@aluno.scholar.com | aluno123 |
+| **Aluno** | ana.paula@aluno.scholar.com | aluno123 |
 
 ## 🎯 Funcionalidades
 

@@ -11,6 +11,7 @@ async function initDatabase(): Promise<void> {
     
     // Dropar tabelas existentes (em ordem reversa devido a foreign keys)
     console.log('🧹 Limpando tabelas antigas (se existirem)...');
+    await client.query('DROP TABLE IF EXISTS avisos CASCADE');
     await client.query('DROP TABLE IF EXISTS notas CASCADE');
     await client.query('DROP TABLE IF EXISTS matriculas CASCADE');
     await client.query('DROP TABLE IF EXISTS disciplinas CASCADE');
@@ -114,6 +115,24 @@ async function initDatabase(): Promise<void> {
       )
     `);
     console.log('✅ Tabela "notas" criada');
+    
+    // Tabela de avisos acadêmicos
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS avisos (
+        id SERIAL PRIMARY KEY,
+        titulo VARCHAR(255) NOT NULL,
+        conteudo TEXT NOT NULL,
+        tipo VARCHAR(50) NOT NULL CHECK (tipo IN ('institucional', 'lembrete', 'comunicado', 'prova')),
+        autor_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+        disciplina_id INTEGER REFERENCES disciplinas(id) ON DELETE SET NULL,
+        data_publicacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        data_evento DATE,
+        ativo BOOLEAN DEFAULT true,
+        criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Tabela "avisos" criada');
     
     // Verificar se já existe um usuário admin
     const adminResult = await client.query(

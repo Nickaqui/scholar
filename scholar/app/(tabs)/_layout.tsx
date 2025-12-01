@@ -5,6 +5,7 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AvisosTabIcon } from '@/components/AvisosTabIcon';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -21,6 +22,21 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="avisos"
+        options={{
+          title: 'Avisos',
+          tabBarIcon: ({ color, focused }) => (
+            <AvisosTabIcon color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="criar-aviso"
+        options={{
+          href: null, // Esconder da tab bar
         }}
       />
       <Tabs.Screen

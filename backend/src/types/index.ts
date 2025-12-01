@@ -161,3 +161,39 @@ export interface PaginatedResponse<T> {
   limite: number;
 }
 
+// DTOs para avisos
+export type TipoAviso = 'institucional' | 'lembrete' | 'comunicado' | 'prova';
+
+export interface CriarAvisoDTO {
+  titulo: string;
+  conteudo: string;
+  tipo: TipoAviso;
+  disciplina_id?: number;
+  data_evento?: string;
+}
+
+export interface AtualizarAvisoDTO {
+  titulo?: string;
+  conteudo?: string;
+  tipo?: TipoAviso;
+  disciplina_id?: number;
+  data_evento?: string;
+  ativo?: boolean;
+}
+
+export interface Aviso {
+  id: number;
+  titulo: string;
+  conteudo: string;
+  tipo: TipoAviso;
+  autor_id: number;
+  autor_nome?: string;
+  disciplina_id?: number;
+  disciplina_nome?: string;
+  data_publicacao: string;
+  data_evento?: string;
+  ativo: boolean;
+  criado_em: string;
+  atualizado_em: string;
+}
+

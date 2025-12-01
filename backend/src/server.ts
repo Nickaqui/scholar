@@ -10,6 +10,7 @@ import professoresRoutes from './routes/professores';
 import disciplinasRoutes from './routes/disciplinas';
 import matriculasRoutes from './routes/matriculas';
 import notasRoutes from './routes/notas';
+import avisosRoutes from './routes/avisos';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/professores', professoresRoutes);
 app.use('/api/disciplinas', disciplinasRoutes);
 app.use('/api/matriculas', matriculasRoutes);
 app.use('/api/notas', notasRoutes);
+app.use('/api/avisos', avisosRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {
@@ -42,7 +44,9 @@ app.get('/', (req, res) => {
       'GET /api/professores',
       'GET /api/disciplinas',
       'GET /api/matriculas',
-      'GET /api/notas'
+      'GET /api/notas',
+      'GET /api/avisos',
+      'POST /api/avisos'
     ]
   });
 });

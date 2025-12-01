@@ -8,6 +8,7 @@ const router = Router();
 // Listar todas as disciplinas
 router.get('/', verificarToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const usuario = req.usuario;
     const { busca, professor_id, semestre, ativa } = req.query;
     
     let query = `
@@ -25,13 +26,21 @@ router.get('/', verificarToken, async (req: AuthRequest, res: Response): Promise
     const params: any[] = [];
     let paramCount = 1;
 
+    // Se for professor, mostrar apenas suas disciplinas
+    if (usuario?.tipo === 'professor') {
+      query += ` AND d.professor_id = (SELECT id FROM professores WHERE usuario_id = $${paramCount})`;
+      params.push(usuario.id);
+      paramCount++;
+    }
+
     if (busca) {
       query += ` AND (d.nome ILIKE $${paramCount} OR d.codigo ILIKE $${paramCount})`;
       params.push(`%${busca}%`);
       paramCount++;
     }
 
-    if (professor_id) {
+    // Se admin passar professor_id explicitamente, usar esse filtro
+    if (professor_id && usuario?.tipo === 'administrador') {
       query += ` AND d.professor_id = $${paramCount}`;
       params.push(professor_id);
       paramCount++;
